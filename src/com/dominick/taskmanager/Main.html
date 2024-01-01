@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #defeca;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        #taskList {
+            margin-top: 20px;
+        }
+
+        #taskList table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #taskList th, #taskList td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #taskList th {
+            background-color: #f2f2f2;
+        }
+
+        #taskForm {
+            margin-top: 20px;
+        }
+
+        #taskForm input, #taskForm button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Task Manager</h1>
+
+<div id="taskList">
+    <h2>Task List</h2>
+    <button>Load Tasks</button>
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Due Date</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Task rows will be added dynamically here -->
+
+        </tbody>
+    </table>
+</div>
+
+<div id="taskForm">
+    <h2>Add Task</h2>
+    <form id="addTaskForm">
+        <label for="taskName">Task Name:</label>
+        <input type="text" id="taskName" name="taskName" required>
+
+        <label for="dueDate">Due Date:</label>
+        <input type="date" id="dueDate" name="dueDate" required>
+
+        <label for="taskStatus">Task Status:</label>
+        <input type="text" id="taskStatus" name="taskStatus" required>
+
+        <button type="submit">Add Task</button>
+    </form>
+</div>
+
+<script>
+    // Function to fetch tasks from the back end
+    function fetchTasks() {
+        fetch('http://localhost:8080/tasks')  // Replace with your actual back-end URL
+            .then(response => response.json())
+            .then(tasks => {
+                // Process the retrieved tasks and update the HTML
+                updateTaskList(tasks);
+            })
+            .catch(error => console.error('Error fetching tasks:', error));
+    }
+
+    // Function to update the task list in the HTML
+    function updateTaskList(tasks) {
+        const tbody = document.querySelector('#taskList tbody');
+        tbody.innerHTML = '';  // Clear existing rows
+
+        tasks.forEach(task => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${task.name}</td>
+                <td>${task.dueDate}</td>
+                <td>${task.status}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Call fetchTasks when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchTasks();
+    });
+</script>
+
+
+</body>
+</html>

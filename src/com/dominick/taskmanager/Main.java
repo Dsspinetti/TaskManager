@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    private static final String DEFAULT_FILE_NAME = "taskData.txt";
+    private static final String DEFAULT_FILE_NAME = "taskData";
     public static void main(String[] args) {
         //begin application
 
         TaskManager taskManager = new TaskManager();
+        taskManager.loadTasksFromFile(DEFAULT_FILE_NAME);
         Scanner scnr = new Scanner(System.in);
 
         while (true) {
