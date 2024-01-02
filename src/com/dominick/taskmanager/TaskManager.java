@@ -19,6 +19,11 @@ public class TaskManager {
     public void removeTask(Task task) {
         tasks.remove(task);
     }
+    public void removeTask(int index) {
+        if (index >= 0 && index < tasks.size()) {
+            tasks.remove(index);
+        }
+    }
 
     public List<Task> getAllTasks() {
         return tasks;

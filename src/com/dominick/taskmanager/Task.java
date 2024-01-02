@@ -1,5 +1,6 @@
 package com.dominick.taskmanager;
 
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.io.Serializable;
 import java.util.Date;
@@ -25,6 +26,7 @@ public class Task implements Serializable {
 
     public Date getDueDate() {
         return dueDate;
+
     }
 
     public Date setDueDate(Date dueDate) {
