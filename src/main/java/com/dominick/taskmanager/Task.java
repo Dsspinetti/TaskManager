@@ -1,8 +1,7 @@
 package com.dominick.taskmanager;
 
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Task implements Serializable {
