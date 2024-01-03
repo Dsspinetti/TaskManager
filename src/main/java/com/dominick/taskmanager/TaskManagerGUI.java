@@ -1,25 +1,16 @@
 package com.dominick.taskmanager;
 
-import com.dominick.taskmanager.Task;
 import com.toedter.calendar.JDateChooser;
 import javafx.scene.control.DatePicker;
 
-//import org.jdatepicker.JDatePicker;
-//import org.jdatepicker.UtilDateModel;
 import javax.swing.*;
 import java.awt.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 public class TaskManagerGUI extends JFrame {
     private DatePicker datePicker;
@@ -91,15 +82,18 @@ public class TaskManagerGUI extends JFrame {
         List<Task> tasks = taskManager.getAllTasks();
         taskListModel.clear();
 
+        taskListModel.addElement("<html><b>Name</b>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<b>Due Date</b>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<b>Status</b></html>");
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         for (Task task : tasks) {
             String formattedDate = dateFormat.format(task.getDueDate());
 
-            String taskDetails = "Name: " + task.getName() +
-                    ", Due Date: " + task.getFormattedDueDate() +
-                    ", Status: " + task.getStatus();
-
+            String taskDetails = String.format("<html><b>"
+                    + task.getName()
+                    + "</b>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<b>"
+                    + task.getFormattedDueDate()
+                    + "</b>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<b>"
+                    + task.getStatus()+"</b></html>");
             taskListModel.addElement(taskDetails);
         }
     }
@@ -109,13 +103,18 @@ public class TaskManagerGUI extends JFrame {
         if (taskName != null && !taskName.trim().isEmpty()) {
             // Get due date
             JDateChooser jd = new JDateChooser();
-            String message ="Choose start date:\n";
-            Object[] params = {message,jd};
-            JOptionPane.showConfirmDialog(null,params,"Start date", JOptionPane.PLAIN_MESSAGE);
+            String message = "Choose start date:\n";
+            Object[] params = {message, jd};
+            JOptionPane.showConfirmDialog(null, params, "Start date", JOptionPane.PLAIN_MESSAGE);
 
 
             // Get status
-            String status = JOptionPane.showInputDialog("Enter task status:");
+            String[] statusOptions = {"Incomplete", "In progress", "Complete"};
+            JComboBox<String> statusDropdown = new JComboBox<>(statusOptions);
+            statusDropdown.setSelectedIndex(0); // Set the default status
+            Object[] statusParams = {"Choose task status:", statusDropdown};
+            JOptionPane.showConfirmDialog(null, statusParams, "Task status", JOptionPane.PLAIN_MESSAGE);
+            String status = (String) statusDropdown.getSelectedItem();
 
             Task newTask = new Task(taskName, jd.getDate(), status);
             taskManager.addTask(newTask);
@@ -135,7 +134,7 @@ public class TaskManagerGUI extends JFrame {
     }
 
     private void removeTask() {
-        int selectedIndex = taskList.getSelectedIndex();
+        int selectedIndex = taskList.getSelectedIndex() - 1;
         if (selectedIndex != -1) {
             Task selectedTask = taskManager.getAllTasks().get(selectedIndex);
             taskManager.removeTask(selectedTask);
