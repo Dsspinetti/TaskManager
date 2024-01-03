@@ -16,9 +16,6 @@ public class TaskManager {
         tasks.add(task);
     }
 
-    public void removeTask(Task task) {
-        tasks.remove(task);
-    }
     public void removeTask(int index) {
         if (index >= 0 && index < tasks.size()) {
             tasks.remove(index);
@@ -59,6 +56,7 @@ public class TaskManager {
         }
         return null;
     }
+
     public void saveTasksToFile(String filename) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
             oos.writeObject(tasks);

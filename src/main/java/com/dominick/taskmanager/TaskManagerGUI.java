@@ -1,32 +1,17 @@
 package com.dominick.taskmanager;
 
-import com.dominick.taskmanager.Task;
 import com.toedter.calendar.JDateChooser;
-import javafx.scene.control.DatePicker;
 
-//import org.jdatepicker.JDatePicker;
-//import org.jdatepicker.UtilDateModel;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.ParseException;
 import java.util.List;
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 public class TaskManagerGUI extends JFrame {
-    private DatePicker datePicker;
-
     private final TaskManager taskManager;
-    private DefaultListModel<String> taskListModel;
-    private JList<String> taskList;  // Declare taskList as an instance variable
+    private JTable taskTable;
+    private DefaultTableModel tableModel;
 
     public TaskManagerGUI(TaskManager taskManager) {
         this.taskManager = taskManager;
@@ -34,73 +19,69 @@ public class TaskManagerGUI extends JFrame {
         initializeUI();
     }
 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            TaskManager taskManager = new TaskManager();
+            TaskManagerGUI gui = new TaskManagerGUI(taskManager);
+            gui.setVisible(true);
+        });
+    }
+
     private void initializeUI() {
         setTitle("Task Manager");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 300);
+        setSize(600, 400);
         setLocationRelativeTo(null);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
+        // Initialize the table model
+        tableModel = new DefaultTableModel();
+        tableModel.addColumn("Name");
+        tableModel.addColumn("Due Date");
+        tableModel.addColumn("Status");
 
-        taskListModel = new DefaultListModel<>();
-        taskList = new JList<>(taskListModel);  // Initialize taskList
+        // Create the table with the table model
+        taskTable = new JTable(tableModel);
 
-        JScrollPane scrollPane = new JScrollPane(taskList);
+        // Allow the status column to be editable with a dropdown
+        JComboBox<String> statusDropdown = new JComboBox<>(new String[]{"Incomplete", "In progress", "Complete"});
+        taskTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(statusDropdown));
 
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        // Add the table to a JScrollPane
+        JScrollPane scrollPane = new JScrollPane(taskTable);
+
+        add(scrollPane, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
 
         JButton addButton = new JButton("Add Task");
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addTask();
-            }
-        });
+        addButton.addActionListener(e -> addTask());
 
         JButton removeButton = new JButton("Remove Task");
-        removeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                removeTask();
-            }
-        });
+        removeButton.addActionListener(e -> removeTask());
 
         JButton saveButton = new JButton("Save Tasks");
-        saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveTasks();
-            }
-        });
+        saveButton.addActionListener(e -> saveTasks());
 
         buttonPanel.add(addButton);
         buttonPanel.add(removeButton);
         buttonPanel.add(saveButton);
 
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        add(mainPanel);
-        updateTaskList();
+        add(buttonPanel, BorderLayout.SOUTH);
+        updateTaskTable();
     }
 
-    private void updateTaskList() {
+    private void updateTaskTable() {
         List<Task> tasks = taskManager.getAllTasks();
-        taskListModel.clear();
+        tableModel.setRowCount(0); // Clear existing rows
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         for (Task task : tasks) {
             String formattedDate = dateFormat.format(task.getDueDate());
 
-            String taskDetails = "Name: " + task.getName() +
-                    ", Due Date: " + task.getFormattedDueDate() +
-                    ", Status: " + task.getStatus();
-
-            taskListModel.addElement(taskDetails);
+            // Add a row to the table model
+            tableModel.addRow(new Object[]{task.getName(), formattedDate, task.getStatus()});
         }
     }
 
@@ -109,46 +90,33 @@ public class TaskManagerGUI extends JFrame {
         if (taskName != null && !taskName.trim().isEmpty()) {
             // Get due date
             JDateChooser jd = new JDateChooser();
-            String message ="Choose start date:\n";
-            Object[] params = {message,jd};
-            JOptionPane.showConfirmDialog(null,params,"Start date", JOptionPane.PLAIN_MESSAGE);
-
+            String message = "Choose start date:\n";
+            Object[] params = {message, jd};
+            JOptionPane.showConfirmDialog(null, params, "Start date", JOptionPane.PLAIN_MESSAGE);
 
             // Get status
-            String status = JOptionPane.showInputDialog("Enter task status:");
+            String[] statusOptions = {"Incomplete", "In progress", "Complete"};
+            JComboBox<String> statusDropdown = new JComboBox<>(statusOptions);
+            statusDropdown.setSelectedIndex(0); // Set the default status
+            Object[] statusParams = {"Choose task status:", statusDropdown};
+            JOptionPane.showConfirmDialog(null, statusParams, "Task status", JOptionPane.PLAIN_MESSAGE);
+            String status = (String) statusDropdown.getSelectedItem();
 
             Task newTask = new Task(taskName, jd.getDate(), status);
             taskManager.addTask(newTask);
-            updateTaskList();
-        }
-    }
-
-    // Helper method to parse date from string (add appropriate error handling)
-    private Date parseDate(String dateString) {
-        try {
-            return new SimpleDateFormat("yyyy-MM-dd").parse(dateString);
-        } catch (ParseException e) {
-            // Handle parsing exception, e.g., show an error message
-            e.printStackTrace();
-            return null;
+            updateTaskTable();
         }
     }
 
     private void removeTask() {
-        int selectedIndex = taskList.getSelectedIndex();
-        if (selectedIndex != -1) {
-            Task selectedTask = taskManager.getAllTasks().get(selectedIndex);
-            taskManager.removeTask(selectedTask);
-            updateTaskList();
-
-            // Ensure the selected index is within the updated list bounds
-            int newSelectedIndex = Math.min(selectedIndex, taskListModel.size() - 1);
-            taskList.setSelectedIndex(newSelectedIndex);
+        int selectedRow = taskTable.getSelectedRow();
+        if (selectedRow != -1) {
+            taskManager.removeTask(selectedRow);
+            updateTaskTable();
         }
     }
 
     private void saveTasks() {
         taskManager.saveTasksToFile("taskData");
-
     }
 }

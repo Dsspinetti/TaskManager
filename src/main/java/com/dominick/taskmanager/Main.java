@@ -1,11 +1,5 @@
 package com.dominick.taskmanager;
 
-import com.dominick.taskmanager.TaskManager;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Date;
-import java.util.List;
 import javax.swing.*;
 
 public class Main {
