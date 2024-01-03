@@ -58,4 +58,10 @@ public class Task implements Serializable {
         System.out.println("Due Date: " + dateFormat.format(dueDate));
         System.out.println("Status: " + status);
     }
+
+    public String getFormattedDueDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        return sdf.format(dueDate);
+    }
 }
+
