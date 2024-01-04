@@ -35,5 +35,12 @@ public class Task implements Serializable {
         this.status = "In Progress";
     }
 
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
 
