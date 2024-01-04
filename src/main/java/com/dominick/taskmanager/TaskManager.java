@@ -26,37 +26,6 @@ public class TaskManager {
         return tasks;
     }
 
-    public void markTaskAsComplete(String taskName) {
-        for (Task task : tasks) {
-            if (task.getName().equalsIgnoreCase(taskName)) {
-                task.markAsComplete();
-                System.out.println("Task marked as complete!");
-                return;
-            }
-        }
-        System.out.println("Task not found.");
-    }
-
-    public void markTaskAsInProgress(String taskName) {
-        for (Task task : tasks) {
-            if (task.getName().equalsIgnoreCase(taskName)) {
-                task.markAsInProgress();
-                System.out.println("Task marked as in progress!");
-                return;
-            }
-        }
-        System.out.println("Task not found.");
-    }
-
-    public Task findTaskByName(String taskName) {
-        for (Task task : tasks) {
-            if (task.getName().equalsIgnoreCase(taskName)) {
-                return task;
-            }
-        }
-        return null;
-    }
-
     public void saveTasksToFile(String filename) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
             oos.writeObject(tasks);

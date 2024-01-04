@@ -3,9 +3,13 @@ package com.dominick.taskmanager;
 import com.toedter.calendar.JDateChooser;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class TaskManagerGUI extends JFrame {
@@ -45,7 +49,9 @@ public class TaskManagerGUI extends JFrame {
         // Allow the status column to be editable with a dropdown
         JComboBox<String> statusDropdown = new JComboBox<>(new String[]{"Incomplete", "In progress", "Complete"});
         taskTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(statusDropdown));
-
+        // Configure the date column to use a custom renderer and editor
+        taskTable.getColumnModel().getColumn(1).setCellRenderer(new DateCellRenderer());
+        taskTable.getColumnModel().getColumn(1).setCellEditor(new DateCellEditor());
         // Add the table to a JScrollPane
         JScrollPane scrollPane = new JScrollPane(taskTable);
 
@@ -79,6 +85,7 @@ public class TaskManagerGUI extends JFrame {
 
         for (Task task : tasks) {
             String formattedDate = dateFormat.format(task.getDueDate());
+            JDateChooser jd = new JDateChooser();
 
             // Add a row to the table model
             tableModel.addRow(new Object[]{task.getName(), formattedDate, task.getStatus()});
@@ -92,7 +99,7 @@ public class TaskManagerGUI extends JFrame {
             JDateChooser jd = new JDateChooser();
             String message = "Choose start date:\n";
             Object[] params = {message, jd};
-            JOptionPane.showConfirmDialog(null, params, "Start date", JOptionPane.PLAIN_MESSAGE);
+            JOptionPane.showConfirmDialog(null, params, "Due date", JOptionPane.PLAIN_MESSAGE);
 
             // Get status
             String[] statusOptions = {"Incomplete", "In progress", "Complete"};
@@ -118,5 +125,86 @@ public class TaskManagerGUI extends JFrame {
 
     private void saveTasks() {
         taskManager.saveTasksToFile("taskData");
+    }
+
+    class TaskTableModel extends AbstractTableModel {
+        private List<Task> tasks;
+
+        @Override
+        public int getRowCount() {
+            return tasks == null ? 0 : tasks.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 3; // Three columns: Name, Due Date, Status
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            Task task = tasks.get(rowIndex);
+            switch (columnIndex) {
+                case 0:
+                    return task.getName();
+                case 1:
+                    return task.getDueDate();
+                case 2:
+                    return task.getStatus();
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex == 1 || columnIndex == 2; // Allow editing for Due Date and Status columns
+        }
+
+        @Override
+        public void setValueAt(Object value, int rowIndex, int columnIndex) {
+            Task task = tasks.get(rowIndex);
+            switch (columnIndex) {
+                case 1:
+                    task.setDueDate((Date) value);
+                    break;
+                case 2:
+                    task.setStatus((String) value);
+                    break;
+            }
+            fireTableCellUpdated(rowIndex, columnIndex);
+        }
+
+        public void setTasks(List<Task> tasks) {
+            this.tasks = tasks;
+            fireTableDataChanged();
+        }
+    }
+
+    class DateCellRenderer extends DefaultTableCellRenderer {
+        private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (value instanceof Date) {
+                value = dateFormat.format(value);
+            }
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+    }
+    class DateCellEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JDateChooser dateChooser = new JDateChooser();
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            if (value instanceof Date) {
+                dateChooser.setDate((Date) value);
+            }
+            return dateChooser;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return dateChooser.getDate();
+        }
     }
 }
